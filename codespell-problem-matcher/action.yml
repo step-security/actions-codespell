@@ -1,9 +1,0 @@
-name: 'codespell problem matcher'
-author: 'step-security'
-description: 'Shows codespell errors as annotation (with file and code line) in GitHub Actions'
-runs:
-  using: 'node20'
-  main: 'index.js'
-branding:
-  icon: 'search'
-  color: 'green'
