@@ -15,6 +15,7 @@ jobs:
     if: startsWith(github.event.inputs.release_tag, 'v')
     permissions:
       contents: read
+      packages: write
 
     steps:
       - name: Checkout code
