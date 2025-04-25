@@ -8,3 +8,13 @@ updates:
     directory: / # Check the repository's workflows under /.github/workflows/
     schedule:
       interval: daily
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: daily
+
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: daily
