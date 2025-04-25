@@ -44,7 +44,7 @@ inputs:
     default: ''
 runs:
   using: 'docker'
-  image: 'Dockerfile'
+  image: 'docker://ghcr.io/step-security/actions-codespell@sha256:'
 branding:
   icon: 'code'
   color: 'blue'
