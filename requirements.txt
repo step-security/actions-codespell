@@ -1,0 +1,1 @@
+codespell[toml]>=2.2.4
