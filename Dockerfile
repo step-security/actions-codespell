@@ -1,5 +1,4 @@
-FROM python:3.13-alpine@sha256:b4d299311845147e7e47c970566906caf8378a1f04e5d3de65b5f2e834f8e3bf
-
+FROM python:3.13-alpine3.22@sha256:3a77fbbb5bc88c0f63cc2692a13b011547f25ee93536e991544c452801856226
 RUN apk add --no-cache curl
 
 COPY LICENSE \
