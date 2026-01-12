@@ -1,4 +1,4 @@
-FROM python:3.13-alpine3.22@sha256:3a77fbbb5bc88c0f63cc2692a13b011547f25ee93536e991544c452801856226
+FROM python:3.14-alpine3.23@sha256:7af51ebeb83610fb69d633d5c61a2efb87efa4caf66b59862d624bb6ef788345
 
 RUN apk add --no-cache curl
 
