@@ -35,6 +35,12 @@ function setup() {
     [ -d "/github/workflow/" ] || sudo mkdir -p /github/workflow/ && sudo chmod 777 /github/workflow/
     #ls -alR /github/workflow/
 
+    # Set GITHUB_EVENT_PATH to a fake public-repo event so REPO_PRIVATE=false,
+    # which skips the subscription check and keeps banner output deterministic.
+    local event_file="/tmp/test-event.json"
+    printf '{"repository":{"private":false}}' > "${event_file}"
+    export GITHUB_EVENT_PATH="${event_file}"
+
     # Set default input values
     export INPUT_CHECK_FILENAMES=""
     export INPUT_CHECK_HIDDEN=""
@@ -55,10 +61,10 @@ function setup() {
     run "./entrypoint.sh"
     [ $status -eq $expectedExitStatus ]
 
-    # Check output
-    [ "${lines[0]}" == "::add-matcher::${RUNNER_TEMP}/_github_workflow/codespell-matcher.json" ]
+    # Check output (lines 0-5 are the banner; add-matcher starts at line 6)
+    [ "${lines[6]}" == "::add-matcher::${RUNNER_TEMP}/_github_workflow/codespell-matcher.json" ]
     outputRegex="^Running codespell on '${INPUT_PATH}'"
-    [[ "${lines[1]}" =~ $outputRegex ]]
+    [[ "${lines[7]}" =~ $outputRegex ]]
     [ "${lines[-4 - $errorCount]}" == "$errorCount" ]
     [ "${lines[-3]}" == "Codespell found one or more problems" ]
     [ "${lines[-2]}" == "::remove-matcher owner=codespell-matcher-default::" ]
