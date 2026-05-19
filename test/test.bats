@@ -29,6 +29,8 @@ function setup() {
     [ -d "/code/" ] || sudo mkdir -p /code/
     [ -f "/code/codespell-matcher.json" ] || sudo cp codespell-problem-matcher/codespell-matcher.json /code/
     #ls -alR /code/
+    # Create the _github_workflow dir that entrypoint.sh copies the matcher into
+    [ -d "${RUNNER_TEMP}/_github_workflow/" ] || sudo mkdir -p ${RUNNER_TEMP}/_github_workflow/ && sudo chmod 777 ${RUNNER_TEMP}/_github_workflow/
     # Add a random place BATS tries to put it
     [ -d "/github/workflow/" ] || sudo mkdir -p /github/workflow/ && sudo chmod 777 /github/workflow/
     #ls -alR /github/workflow/
