@@ -40,8 +40,10 @@ if [ "$REPO_PRIVATE" != "false" ]; then
   fi
 fi
 
-# Copy the matcher to the host system; otherwise "add-matcher" can't find it.
-cp /code/codespell-matcher.json /github/workflow/codespell-matcher.json
+# Copy the matcher directly to RUNNER_TEMP; the /github/workflow bind-mount is not reliable.
+CODE_DIR="${CODE_DIR:-/code}"
+mkdir -p "${RUNNER_TEMP}/_github_workflow"
+cp "${CODE_DIR}/codespell-matcher.json" "${RUNNER_TEMP}/_github_workflow/codespell-matcher.json"
 echo "::add-matcher::${RUNNER_TEMP}/_github_workflow/codespell-matcher.json"
 
 # Run codespell.
