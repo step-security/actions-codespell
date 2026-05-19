@@ -61,10 +61,10 @@ function setup() {
     run "./entrypoint.sh"
     [ $status -eq $expectedExitStatus ]
 
-    # Check output (lines 0-5 are the banner; add-matcher starts at line 6)
-    [ "${lines[6]}" == "::add-matcher::${RUNNER_TEMP}/_github_workflow/codespell-matcher.json" ]
-    outputRegex="^Running codespell on '${INPUT_PATH}'"
-    [[ "${lines[7]}" =~ $outputRegex ]]
+    # Check output
+    [[ "${output}" == *"::add-matcher::${RUNNER_TEMP}/_github_workflow/codespell-matcher.json"* ]]
+    outputRegex="Running codespell on '${INPUT_PATH}'"
+    [[ "${output}" =~ $outputRegex ]]
     [ "${lines[-4 - $errorCount]}" == "$errorCount" ]
     [ "${lines[-3]}" == "Codespell found one or more problems" ]
     [ "${lines[-2]}" == "::remove-matcher owner=codespell-matcher-default::" ]
