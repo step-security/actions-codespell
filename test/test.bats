@@ -29,9 +29,17 @@ function setup() {
     [ -d "/code/" ] || sudo mkdir -p /code/
     [ -f "/code/codespell-matcher.json" ] || sudo cp codespell-problem-matcher/codespell-matcher.json /code/
     #ls -alR /code/
+    # Create the _github_workflow dir that entrypoint.sh copies the matcher into
+    [ -d "${RUNNER_TEMP}/_github_workflow/" ] || sudo mkdir -p ${RUNNER_TEMP}/_github_workflow/ && sudo chmod 777 ${RUNNER_TEMP}/_github_workflow/
     # Add a random place BATS tries to put it
     [ -d "/github/workflow/" ] || sudo mkdir -p /github/workflow/ && sudo chmod 777 /github/workflow/
     #ls -alR /github/workflow/
+
+    # Set GITHUB_EVENT_PATH to a fake public-repo event so REPO_PRIVATE=false,
+    # which skips the subscription check and keeps banner output deterministic.
+    local event_file="/tmp/test-event.json"
+    printf '{"repository":{"private":false}}' > "${event_file}"
+    export GITHUB_EVENT_PATH="${event_file}"
 
     # Set default input values
     export INPUT_CHECK_FILENAMES=""
@@ -54,9 +62,9 @@ function setup() {
     [ $status -eq $expectedExitStatus ]
 
     # Check output
-    [ "${lines[0]}" == "::add-matcher::${RUNNER_TEMP}/_github_workflow/codespell-matcher.json" ]
-    outputRegex="^Running codespell on '${INPUT_PATH}'"
-    [[ "${lines[1]}" =~ $outputRegex ]]
+    [[ "${output}" == *"::add-matcher::${RUNNER_TEMP}/_github_workflow/codespell-matcher.json"* ]]
+    outputRegex="Running codespell on '${INPUT_PATH}'"
+    [[ "${output}" =~ $outputRegex ]]
     [ "${lines[-4 - $errorCount]}" == "$errorCount" ]
     [ "${lines[-3]}" == "Codespell found one or more problems" ]
     [ "${lines[-2]}" == "::remove-matcher owner=codespell-matcher-default::" ]
