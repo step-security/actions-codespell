@@ -1,6 +1,4 @@
-FROM python:3.14-alpine3.23@sha256:faee120f7885a06fcc9677922331391fa690d911c020abb9e8025ff3d908e510
-
-RUN apk add --no-cache curl jq && apk upgrade --no-cache zlib
+FROM python:3.13-alpine
 
 COPY LICENSE \
         README.md \
@@ -9,7 +7,7 @@ COPY LICENSE \
         requirements.txt \
         /code/
 
-RUN pip install -r /code/requirements.txt
+RUN pip install --no-cache-dir -r /code/requirements.txt
 
 ENTRYPOINT ["/code/entrypoint.sh"]
 CMD []

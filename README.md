@@ -1,5 +1,3 @@
-[![StepSecurity Maintained Action](https://raw.githubusercontent.com/step-security/maintained-actions-assets/main/assets/maintained-action-banner.png)](https://docs.stepsecurity.io/actions/stepsecurity-maintained-actions)
-
 # Codespell with GitHub Actions -- including annotations for Pull Requests
 
 This GitHub Actions runs codespell over your code.
@@ -8,7 +6,8 @@ Any warnings or errors will be annotated in the Pull Request.
 ## Usage
 
 ```yml
-uses: step-security/actions-codespell@v2
+- uses: actions/checkout@v5
+- uses: codespell-project/actions-codespell@v2
 ```
 
 ### Parameter: check_filenames
@@ -18,7 +17,7 @@ If set, check file names for spelling mistakes as well.
 This parameter is optional; by default `codespell` will only check the file contents.
 
 ```yml
-uses: step-security/actions-codespell@v2
+uses: codespell-project/actions-codespell@v2
 with:
   check_filenames: true
 ```
@@ -30,7 +29,7 @@ If set, check hidden files (those starting with ".") for spelling mistakes as we
 This parameter is optional; by default `codespell` will not check hidden files.
 
 ```yml
-uses: step-security/actions-codespell@v2
+uses: codespell-project/actions-codespell@v2
 with:
   check_hidden: true
 ```
@@ -42,7 +41,7 @@ File with lines that should not be checked for spelling mistakes.
 This parameter is optional; by default `codespell` will check all lines.
 
 ```yml
-uses: step-security/actions-codespell@v2
+uses: codespell-project/actions-codespell@v2
 with:
   exclude_file: src/foo
 ```
@@ -54,7 +53,7 @@ Comma-separated list of files to skip (it accepts globs as well).
 This parameter is optional; by default `codespell` won't skip any files.
 
 ```yml
-uses: step-security/actions-codespell@v2
+uses: codespell-project/actions-codespell@v2
 with:
   skip: foo,bar
 ```
@@ -66,7 +65,7 @@ Comma-separated list of builtin dictionaries to use.
 This parameter is optional; by default `codespell` will use its default selection of built in dictionaries.
 
 ```yml
-uses: step-security/actions-codespell@v2
+uses: codespell-project/actions-codespell@v2
 with:
   builtin: clear,rare
 ```
@@ -79,7 +78,7 @@ Words are case sensitive based on how they are written in the dictionary file.
 This parameter is optional; by default `codespell` will check all words for typos.
 
 ```yml
-uses: step-security/actions-codespell@v2
+uses: codespell-project/actions-codespell@v2
 with:
   ignore_words_file: .codespellignore
 ```
@@ -92,7 +91,7 @@ Words are case sensitive based on how they are written in the dictionary file.
 This parameter is optional; by default `codespell` will check all words for typos.
 
 ```yml
-uses: step-security/actions-codespell@v2
+uses: codespell-project/actions-codespell@v2
 with:
   ignore_words_list: abandonned,ackward
 ```
@@ -106,7 +105,7 @@ If set to "*", all misspelling in URIs and emails will be ignored.
 This parameter is optional; by default `codespell` will check all URIs and emails for typos.
 
 ```yml
-uses: step-security/actions-codespell@v2
+uses: codespell-project/actions-codespell@v2
 with:
   uri_ignore_words_list: abandonned
 ```
@@ -119,7 +118,7 @@ This can be useful if your project has code you don't want to spell check for so
 This parameter is optional; by default `codespell` will run on your whole repository.
 
 ```yml
-uses: step-security/actions-codespell@v2
+uses: codespell-project/actions-codespell@v2
 with:
   path: src
 ```
@@ -133,7 +132,7 @@ All errors and warnings are annotated in Pull Requests, but it will act like eve
 This parameter is optional; setting this to any value will enable it.
 
 ```yml
-uses: step-security/actions-codespell@v2
+uses: codespell-project/actions-codespell@v2
 with:
   only_warn: 1
 ```
