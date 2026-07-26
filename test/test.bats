@@ -22,6 +22,13 @@ export RUNNER_TEMP="/foo/runner_temp"
 
 # This function runs before every test
 function setup() {
+    # Public repo event → subscription banner only (no private-repo API check)
+    local event_file="/tmp/test-event.json"
+    printf '{"repository":{"private":false}}' > "${event_file}"
+    export GITHUB_EVENT_PATH="${event_file}"
+    # Matcher output dir used by StepSecurity entrypoint
+    [ -d "${RUNNER_TEMP}/_github_workflow/" ] || sudo mkdir -p ${RUNNER_TEMP}/_github_workflow/ && sudo chmod 777 ${RUNNER_TEMP}/_github_workflow/
+
     # Simulate the Dockerfile COPY command
     [ -d "${RUNNER_TEMP}/code/" ] || sudo mkdir -p ${RUNNER_TEMP}/code/
     [ -f "${RUNNER_TEMP}/code/codespell-matcher.json" ] || sudo cp codespell-problem-matcher/codespell-matcher.json ${RUNNER_TEMP}/code/
@@ -29,17 +36,9 @@ function setup() {
     [ -d "/code/" ] || sudo mkdir -p /code/
     [ -f "/code/codespell-matcher.json" ] || sudo cp codespell-problem-matcher/codespell-matcher.json /code/
     #ls -alR /code/
-    # Create the _github_workflow dir that entrypoint.sh copies the matcher into
-    [ -d "${RUNNER_TEMP}/_github_workflow/" ] || sudo mkdir -p ${RUNNER_TEMP}/_github_workflow/ && sudo chmod 777 ${RUNNER_TEMP}/_github_workflow/
     # Add a random place BATS tries to put it
     [ -d "/github/workflow/" ] || sudo mkdir -p /github/workflow/ && sudo chmod 777 /github/workflow/
     #ls -alR /github/workflow/
-
-    # Set GITHUB_EVENT_PATH to a fake public-repo event so REPO_PRIVATE=false,
-    # which skips the subscription check and keeps banner output deterministic.
-    local event_file="/tmp/test-event.json"
-    printf '{"repository":{"private":false}}' > "${event_file}"
-    export GITHUB_EVENT_PATH="${event_file}"
 
     # Set default input values
     export INPUT_CHECK_FILENAMES=""
@@ -47,6 +46,7 @@ function setup() {
     export INPUT_EXCLUDE_FILE=""
     export INPUT_SKIP=""
     export INPUT_BUILTIN=""
+    export INPUT_CONFIG=""
     export INPUT_IGNORE_WORDS_FILE=""
     export INPUT_IGNORE_WORDS_LIST=""
     export INPUT_URI_IGNORE_WORDS_LIST=""
@@ -100,6 +100,50 @@ function setup() {
     run "./entrypoint.sh"
     [ $status -eq $expectedExitStatus ]
     [ "${lines[-4 - $errorCount]}" == "$errorCount" ]
+}
+
+@test "Pass an ill-formed file to INPUT_CONFIG" {
+    # codespell's exit status is 78 for a configparser.Error exception
+    expectedExitStatus=78
+    INPUT_CONFIG="./test/testdata/.badcfg"
+    run "./entrypoint.sh"
+    [ $status -eq $expectedExitStatus ]
+}
+
+@test "Pass a non-existing file to INPUT_CONFIG" {
+    errorCount=$((ROOT_MISSPELLING_COUNT + SUBFOLDER_MISSPELLING_COUNT))
+    # codespell's exit status is 0, or 65 if there are errors found
+    if [ $errorCount -eq 0 ]; then expectedExitStatus=0; else expectedExitStatus=65; fi
+    INPUT_CONFIG="./foo"
+    run "./entrypoint.sh"
+    [ $status -eq $expectedExitStatus ]
+
+    # Check output
+    [[ "${output}" == *"::add-matcher::${RUNNER_TEMP}/_github_workflow/codespell-matcher.json"* ]]
+    outputRegex="Running codespell on '${INPUT_PATH}'"
+    [[ "${output}" =~ $outputRegex ]]
+    [ "${lines[-4 - $errorCount]}" == "$errorCount" ]
+    [ "${lines[-3]}" == "Codespell found one or more problems" ]
+    [ "${lines[-2]}" == "::remove-matcher owner=codespell-matcher-default::" ]
+    [ "${lines[-1]}" == "::remove-matcher owner=codespell-matcher-specified::" ]
+}
+
+@test "Pass a valid file to INPUT_CONFIG" {
+    errorCount=$((ROOT_MISSPELLING_COUNT + SUBFOLDER_MISSPELLING_COUNT))
+    # codespell's exit status is 0, or 65 if there are errors found
+    if [ $errorCount -eq 0 ]; then expectedExitStatus=0; else expectedExitStatus=65; fi
+    INPUT_CONFIG="./test/testdata/.goodcfg"
+    run "./entrypoint.sh"
+    [ $status -eq $expectedExitStatus ]
+
+    # Check output
+    [[ "${output}" == *"::add-matcher::${RUNNER_TEMP}/_github_workflow/codespell-matcher.json"* ]]
+    outputRegex="Running codespell on '${INPUT_PATH}'"
+    [[ "${output}" =~ $outputRegex ]]
+    [ "${lines[-4 - $errorCount]}" == "$errorCount" ]
+    [ "${lines[-3]}" == "Codespell found one or more problems" ]
+    [ "${lines[-2]}" == "::remove-matcher owner=codespell-matcher-default::" ]
+    [ "${lines[-1]}" == "::remove-matcher owner=codespell-matcher-specified::" ]
 }
 
 @test "Use an exclude file" {
