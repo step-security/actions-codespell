@@ -9,7 +9,7 @@ Any warnings or errors will be annotated in the Pull Request.
 
 ```yml
 - uses: actions/checkout@v7
-- uses: codespell-project/actions-codespell@v2
+- uses: step-security/actions-codespell@v2
 ```
 
 ### Parameter: check_filenames
