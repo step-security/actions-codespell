@@ -1,34 +1,29 @@
-name: Publish stable image
+name: Publish docker image
 
 on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Tag to release (e.g. v1.2.3)'
+        description: 'Tag to release'
         required: true
         type: string
 
 permissions:
   contents: read
+  packages: write
 
 jobs:
-  publish_image:
-    name: Publish Docker image to ghcr.io
+  build:
     runs-on: ubuntu-latest
     if: startsWith(github.event.inputs.release_tag, 'v')
-    permissions:
-      contents: read
-      packages: write
-
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2.20.1
+        uses: step-security/harden-runner@v2
         with:
           egress-policy: audit
 
-      - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
+      - name: Checkout
+        uses: actions/checkout@v7
       - name: Validate tag format
         run: |
           TAG=${{ github.event.inputs.release_tag }}
@@ -37,16 +32,24 @@ jobs:
             exit 1
           fi
           echo "✅ Valid semver tag: $TAG"
-
-      - name: Build Docker image
-        run: |
-          IMAGE_NAME=ghcr.io/${{ github.repository }}/stable:${{ github.event.inputs.release_tag }}
-          docker build -t $IMAGE_NAME .
-
       - name: Log in to GitHub Container Registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        uses: step-security/docker-login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Push Docker image
-        run: |
-          IMAGE_NAME=ghcr.io/${{ github.repository }}/stable:${{ github.event.inputs.release_tag }}
-          docker push $IMAGE_NAME
+      - name: Set up QEMU for ARM builds
+        uses: step-security/setup-qemu-action@v4
+
+      - name: Set up Docker Buildx
+        uses: step-security/setup-buildx-action@v4
+
+      - name: Build and push Docker image
+        uses: step-security/docker-build-push-action@v7
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ github.event.inputs.release_tag }}
